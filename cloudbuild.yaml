@@ -1,0 +1,34 @@
+steps:
+# This step logs in to dockerhub
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker login --username=$$USERNAME --password=$$PASSWORD']
+  secretEnv: ['USERNAME', 'PASSWORD']
+# This step builds and tags the image 
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker build --build-arg ENV_PHASE=${_BUILD_PHASE} -t ${_IMAGE}:${_IMAGE_TAG} .']
+# This step pushes the image to the container registry 
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker push ${_IMAGE}:${_IMAGE_TAG}']
+# This step updates the image tag in the manifests repository 
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker run -e BUILD_PHASE=${_BUILD_PHASE} -e REPO_ACCESS_TOKEN=$$K8S_MANIFESTS_ACCESS_TOKEN -e REPO_URL=${_REPO_URL} -e KUSTOMIZE_PATH=${_KUSTOMIZE_PATH} -e GITHUB_USER=$$USERNAME -e GITHUB_USER_EMAIL=${_GITHUB_USER_EMAIL} -e IMAGE=${_IMAGE} -e IMAGE_TAG=${_IMAGE_TAG} kevinyu0506/update-kustomize-image:v1.5']
+  secretEnv: ['K8S_MANIFESTS_ACCESS_TOKEN', 'USERNAME']
+substitutions:
+  _BUILD_PHASE: alpha
+  _REPO_URL: https://github.com/kevinyu0506/gitops-demo-manifests.git
+  _KUSTOMIZE_PATH: overlays/${_BUILD_PHASE}/demo-apps
+  _GITHUB_USER_EMAIL: kevinyu05062006@gmail.com
+  _IMAGE: kevinyu0506/gitops-demo-frontend
+  _IMAGE_TAG: ${_BUILD_PHASE}-${SHORT_SHA}
+availableSecrets:
+  secretManager:
+  - versionName: projects/kalschi-logging/secrets/docker-username/versions/1
+    env: 'USERNAME'
+  - versionName: projects/kalschi-logging/secrets/docker-password/versions/1
+    env: 'PASSWORD'
+  - versionName: projects/kalschi-logging/secrets/k8s-manifests-access-token/versions/1
+    env: 'K8S_MANIFESTS_ACCESS_TOKEN'

@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Override config
-RUN cp ./src/config/${ENV_PHASE}/http-common.js ./src/config/http-common.js
+RUN cp ./config/${ENV_PHASE}/config.js ./public/config.js
 
 RUN npm run build
 

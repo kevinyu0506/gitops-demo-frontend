@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: "https://api-beta.gitops-demo.page/api",
+    baseURL: window.config.BACKEND_URL,
     headers: {
         "Content-type": "application/json"
     }
