@@ -1,3 +1,3 @@
 var config = {
-    BACKEND_URL: "http://api-beta.gitops-demo-app.com/api"
+    BACKEND_URL: "https://api-beta.gitops-demo-app.com/api"
 };
